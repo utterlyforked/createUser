@@ -1,0 +1,77 @@
+#!/bin/bash
+
+VER=$2
+
+if test "$VER" == "" ; then
+
+	read -p "You did not supply 2nd argument, defaulting to PHP5.3 - Are you sure you want to proceed? " -n 1 -r
+	
+	if [[ $REPLY =~ ^[Nn]$ ]] ; then
+		exit 2
+	fi
+
+	VER=php53
+fi
+
+if test "$1" == "" ; then
+	/bin/echo $'\a'Domain is required, e.g: $0 example.com
+	exit 1
+fi
+
+if [ -d "/usr/www/$1" ] ; then
+        /bin/echo $'\a'Home dir create would fail
+        exit 1
+fi
+
+/usr/bin/id $1 &> /dev/null
+
+RETVAL=$?
+
+if [ $RETVAL -eq 0 ] ; then
+	/bin/echo $'\a'User already exists
+	exit 1
+fi
+
+/usr/sbin/useradd -b/usr/www -s/sbin/nologin -k/etc/emptyskel -m $1
+
+RETVAL=$?
+
+if [ $RETVAL -eq 0 ] ; then
+
+	/bin/echo $1 >> /etc/vsftpd/user_list
+	/bin/echo $1 >> /etc/vsftpd/chroot_list
+
+	/bin/sed s/TEMPLATE/$1/ /etc/nginx/template.conf > /etc/nginx/sites-available/$1.conf
+	/bin/ln -s /etc/nginx/sites-available/$1.conf /etc/nginx/sites-enabled/
+
+	if test "$VER" == "php53" ; then
+		/bin/sed s/TEMPLATE/$1/ /etc/php-fpm/template.53.conf > /etc/php-fpm/php.$1.conf
+		/bin/sed s/TEMPLATE/$1/ /etc/init.d/template.53.init > /etc/init.d/php.$1
+	fi
+
+	if test "$VER" == "php52" ; then
+		/bin/sed s/TEMPLATE/$1/ /etc/php-fpm/template.52.conf > /etc/php-fpm/php.$1.conf
+		/bin/sed s/TEMPLATE/$1/ /etc/init.d/template.52.init > /etc/init.d/php.$1
+	fi
+
+	CURRPORT=$(/bin/grep -ho ':9[[:digit:]]*' /etc/php-fpm/*.conf | sort | tail -n1 | awk -F: '{print $2}')
+	NEXTPORT=$(($CURRPORT + 1))
+
+	/bin/sed -i s/PORT/$NEXTPORT/ /etc/php-fpm/php.$1.conf
+	/bin/sed -i s/PORT/$NEXTPORT/ /etc/nginx/sites-available/$1.conf
+	/bin/sed -i s/TEMPLATE/$i/ /usr/www/$1/web/index.html
+
+	/bin/chmod +x /etc/init.d/php.$1
+	/bin/chmod og+rx /usr/www/$1
+
+	/sbin/chkconfig php.$1 on
+	/sbin/service php.$1 start
+	/sbin/service nginx reload
+
+	PASS=$(/usr/bin/mkpasswd $1)	
+
+	/bin/echo $'\a'Added user with password: $PASS
+	exit 0
+fi
+
+exit 1
