@@ -1,5 +1,12 @@
 #!/bin/bash
 
+INSTALL_PATH=/usr/local/createUser
+SITEHOME_PATH=/usr/www
+SKELETON_PATH=/etc/website_account
+VSFTPD_PATH=/etc/vsftpd
+NGINXSA_PATH=/etc/nginx/sites-available
+NGINXSE_PATH=/etc/nginx/sites-enabled
+PHPFPM_PATH=/etc/php-fpm
 VER=$2
 
 if test "$VER" == "" ; then
@@ -18,7 +25,7 @@ if test "$1" == "" ; then
 	exit 1
 fi
 
-if [ -d "/usr/www/$1" ] ; then
+if [ -d "$SITEHOME_PATH/$1" ] ; then
         /bin/echo $'\a'Home dir create would fail
         exit 1
 fi
@@ -32,37 +39,37 @@ if [ $RETVAL -eq 0 ] ; then
 	exit 1
 fi
 
-/usr/sbin/useradd -b/usr/www -s/sbin/nologin -k/etc/emptyskel -m $1
+/usr/sbin/useradd -b $SITEHOME_PATH -s /sbin/nologin -k $SKELETON_PATH -m $1
 
 RETVAL=$?
 
 if [ $RETVAL -eq 0 ] ; then
 
-	/bin/echo $1 >> /etc/vsftpd/user_list
-	/bin/echo $1 >> /etc/vsftpd/chroot_list
+	/bin/echo $1 >> $VSFTPD_PATH/user_list
+	/bin/echo $1 >> $VSFTPD_PATH/chroot_list
 
-	/bin/sed s/TEMPLATE/$1/ /etc/nginx/template.conf > /etc/nginx/sites-available/$1.conf
-	/bin/ln -s /etc/nginx/sites-available/$1.conf /etc/nginx/sites-enabled/
+	/bin/sed s/TEMPLATE/$1/ $(INSTALL_PATH)/nginx-templates/template.conf > $NGINXSA_PATH/$1.conf
+	/bin/ln -s $NGINXSA_PATH/$1.conf $NGINXSE_PATH/
 
 	if test "$VER" == "php53" ; then
-		/bin/sed s/TEMPLATE/$1/ /etc/php-fpm/template.53.conf > /etc/php-fpm/php.$1.conf
-		/bin/sed s/TEMPLATE/$1/ /etc/init.d/template.53.init > /etc/init.d/php.$1
+		/bin/sed s/TEMPLATE/$1/ $(INSTALL_PATH)/php-fpm-templates/template.53.conf > $PHPFPM_PATH/php.$1.conf
+		/bin/sed s/TEMPLATE/$1/ $(INSTALL_PATH)/init-script-templates/template.53.init > /etc/init.d/php.$1
 	fi
 
 	if test "$VER" == "php52" ; then
-		/bin/sed s/TEMPLATE/$1/ /etc/php-fpm/template.52.conf > /etc/php-fpm/php.$1.conf
-		/bin/sed s/TEMPLATE/$1/ /etc/init.d/template.52.init > /etc/init.d/php.$1
+		/bin/sed s/TEMPLATE/$1/ $(INSTALL_PATH)/php-fpm-templates/template.52.conf > $PHPFPM_PATH/php.$1.conf
+		/bin/sed s/TEMPLATE/$1/ $(INSTALL_PATH)/init-script-templates/template.52.init > /etc/init.d/php.$1
 	fi
 
 	CURRPORT=$(/bin/grep -ho ':9[[:digit:]]*' /etc/php-fpm/*.conf | sort | tail -n1 | awk -F: '{print $2}')
 	NEXTPORT=$(($CURRPORT + 1))
 
-	/bin/sed -i s/PORT/$NEXTPORT/ /etc/php-fpm/php.$1.conf
-	/bin/sed -i s/PORT/$NEXTPORT/ /etc/nginx/sites-available/$1.conf
-	/bin/sed -i s/TEMPLATE/$i/ /usr/www/$1/web/index.html
+	/bin/sed -i s/PORT/$NEXTPORT/ $PHPFPM_PATH/php.$1.conf
+	/bin/sed -i s/PORT/$NEXTPORT/ $NGINXSA_PATH/$1.conf
+	/bin/sed -i s/TEMPLATE/$i/ $SITEHOME_PATH/$1/web/index.html
 
 	/bin/chmod +x /etc/init.d/php.$1
-	/bin/chmod og+rx /usr/www/$1
+	/bin/chmod og+rx $SITEHOME_PATH/$1
 
 	/sbin/chkconfig php.$1 on
 	/sbin/service php.$1 start
