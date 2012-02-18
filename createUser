@@ -1,8 +1,10 @@
 #!/bin/bash
 
+set -x
+
 INSTALL_PATH=/usr/local/createUser
 SITEHOME_PATH=/usr/www
-SKELETON_PATH=/etc/website_account
+SKELETON_PATH=/etc/website_account_skeleton
 VSFTPD_PATH=/etc/vsftpd
 NGINXSA_PATH=/etc/nginx/sites-available
 NGINXSE_PATH=/etc/nginx/sites-enabled
@@ -48,20 +50,20 @@ if [ $RETVAL -eq 0 ] ; then
 	/bin/echo $1 >> $VSFTPD_PATH/user_list
 	/bin/echo $1 >> $VSFTPD_PATH/chroot_list
 
-	/bin/sed s/TEMPLATE/$1/ $(INSTALL_PATH)/nginx-templates/template.conf > $NGINXSA_PATH/$1.conf
+	/bin/sed s/TEMPLATE/$1/ $INSTALL_PATH/nginx-templates/template.conf > $NGINXSA_PATH/$1.conf
 	/bin/ln -s $NGINXSA_PATH/$1.conf $NGINXSE_PATH/
 
 	if test "$VER" == "php53" ; then
-		/bin/sed s/TEMPLATE/$1/ $(INSTALL_PATH)/php-fpm-templates/template.53.conf > $PHPFPM_PATH/php.$1.conf
-		/bin/sed s/TEMPLATE/$1/ $(INSTALL_PATH)/init-script-templates/template.53.init > /etc/init.d/php.$1
+		/bin/sed s/TEMPLATE/$1/ $INSTALL_PATH/php-fpm-templates/template.53.conf > $PHPFPM_PATH/php.$1.conf
+		/bin/sed s/TEMPLATE/$1/ $INSTALL_PATH/init-script-templates/template.53.init > /etc/init.d/php.$1
 	fi
 
 	if test "$VER" == "php52" ; then
-		/bin/sed s/TEMPLATE/$1/ $(INSTALL_PATH)/php-fpm-templates/template.52.conf > $PHPFPM_PATH/php.$1.conf
-		/bin/sed s/TEMPLATE/$1/ $(INSTALL_PATH)/init-script-templates/template.52.init > /etc/init.d/php.$1
+		/bin/sed s/TEMPLATE/$1/ $INSTALL_PATH/php-fpm-templates/template.52.conf > $PHPFPM_PATH/php.$1.conf
+		/bin/sed s/TEMPLATE/$1/ $INSTALL_PATH/init-script-templates/template.52.init > /etc/init.d/php.$1
 	fi
 
-	CURRPORT=$(/bin/grep -ho ':9[[:digit:]]*' /etc/php-fpm/*.conf | sort | tail -n1 | awk -F: '{print $2}')
+	CURRPORT=$(/bin/grep -ho ':9[[:digit:]]*' $PHPFPM_PATH/*.conf | sort | tail -n1 | awk -F: '{print $2}')
 	NEXTPORT=$(($CURRPORT + 1))
 
 	/bin/sed -i s/PORT/$NEXTPORT/ $PHPFPM_PATH/php.$1.conf
