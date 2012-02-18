@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -x
-
 INSTALL_PATH=/usr/local/createUser
 SITEHOME_PATH=/usr/www
 SKELETON_PATH=/etc/website_account_skeleton
