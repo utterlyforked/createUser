@@ -74,6 +74,7 @@ if [ $RETVAL -eq 0 ] ; then
 	/sbin/chkconfig php.$1 on
 	/sbin/service php.$1 start
 	/sbin/service nginx reload
+	/sbin/service vsftpd reload
 
 	PASS=$(/usr/bin/mkpasswd $1)	
 	DBNAME=${1//[^a-zA-Z0-9_]/}
