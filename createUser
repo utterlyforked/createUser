@@ -67,11 +67,11 @@ if [ $RETVAL -eq 0 ] ; then
 		/bin/sed s/TEMPLATE/$1/ $INSTALL_PATH/init-script-templates/template.52.init > /etc/init.d/php.$1
 	fi
 
-        if [ -f $PHPFPM_PATH/*.conf ] ; then
+        if [ $(find $PHPFPM_PATH -type f -name "*.conf" | wc -l) > "0" ] ; then
                 CURRPORT=$(/bin/grep -ho ':9[[:digit:]]*' $PHPFPM_PATH/*.conf | sort | tail -n1 | awk -F: '{print $2}')
         fi
 
-        if [ $CURRPORT -eq  ] ; then
+        if [ "$CURRPORT" = "" ] ; then
                 CURRPORT=9000
         fi
 
