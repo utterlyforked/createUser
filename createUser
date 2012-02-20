@@ -67,8 +67,15 @@ if [ $RETVAL -eq 0 ] ; then
 		/bin/sed s/TEMPLATE/$1/ $INSTALL_PATH/init-script-templates/template.52.init > /etc/init.d/php.$1
 	fi
 
-	CURRPORT=$(/bin/grep -ho ':9[[:digit:]]*' $PHPFPM_PATH/*.conf | sort | tail -n1 | awk -F: '{print $2}')
-	NEXTPORT=$(($CURRPORT + 1))
+        if [ -f $PHPFPM_PATH/*.conf ] ; then
+                CURRPORT=$(/bin/grep -ho ':9[[:digit:]]*' $PHPFPM_PATH/*.conf | sort | tail -n1 | awk -F: '{print $2}')
+        fi
+
+        if [ $CURRPORT -eq  ] ; then
+                CURRPORT=9000
+        fi
+
+        NEXTPORT=$(($CURRPORT + 1))
 
 	/bin/sed -i s/PORT/$NEXTPORT/ $PHPFPM_PATH/php.$1.conf
 	/bin/sed -i s/PORT/$NEXTPORT/ $NGINXSA_PATH/$1.conf
