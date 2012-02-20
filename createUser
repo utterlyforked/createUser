@@ -54,8 +54,8 @@ if [ $RETVAL -eq 0 ] ; then
 
 	IPADDR=$(/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}')
 
-	/bin/sed s/IPADDRESS/$IPADDR $NGINXSA_PATH/$1.conf
-	/bin/sed s/HOSTNAME/$HOSTNAME $NGINXSA_PATH/$1.conf
+	/bin/sed s/IPADDRESS/$IPADDR/ $NGINXSA_PATH/$1.conf
+	/bin/sed s/HOSTNAME/$HOSTNAME/ $NGINXSA_PATH/$1.conf
 
 	if test "$VER" == "php53" ; then
 		/bin/sed s/TEMPLATE/$1/ $INSTALL_PATH/php-fpm-templates/template.53.conf > $PHPFPM_PATH/php.$1.conf
