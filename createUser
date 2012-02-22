@@ -79,7 +79,7 @@ if [ $RETVAL -eq 0 ] ; then
 
 	/bin/sed -i s/PORT/$NEXTPORT/ $PHPFPM_PATH/php.$1.conf
 	/bin/sed -i s/PORT/$NEXTPORT/ $NGINXSA_PATH/$1.conf
-	/bin/sed -i s/TEMPLATE/$i/ $SITEHOME_PATH/$1/web/index.html
+	/bin/sed -i s/TEMPLATE/$1/ $SITEHOME_PATH/$1/web/index.html
 
 	/bin/chmod +x /etc/init.d/php.$1
 	/bin/chmod og+rx $SITEHOME_PATH/$1
