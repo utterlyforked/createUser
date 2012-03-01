@@ -57,6 +57,11 @@ if [ $RETVAL -eq 0 ] ; then
 	/bin/sed -i s/IPADDRESS/$IPADDR/ $NGINXSA_PATH/$1.conf
 	/bin/sed -i s/HOSTNAME/$HOSTNAME/ $NGINXSA_PATH/$1.conf
 
+	if test "$VER" == "php54" ; then
+		/bin/sed s/TEMPLATE/$1/ $INSTALL_PATH/php-fpm-templates/template.54.conf > $PHPFPM_PATH/php.$1.conf
+		/bin/sed s/TEMPLATE/$1/ $INSTALL_PATH/init-script-templates/template.54.init > /etc/init.d/php.$1
+	fi
+
 	if test "$VER" == "php53" ; then
 		/bin/sed s/TEMPLATE/$1/ $INSTALL_PATH/php-fpm-templates/template.53.conf > $PHPFPM_PATH/php.$1.conf
 		/bin/sed s/TEMPLATE/$1/ $INSTALL_PATH/init-script-templates/template.53.init > /etc/init.d/php.$1
