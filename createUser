@@ -98,12 +98,17 @@ if [ $RETVAL -eq 0 ] ; then
 	DBNAME=${1//[^a-zA-Z0-9_]/}
  	DBNAME=${DBNAME:0:12}
 
+	/bin/mkdir $SITEHOME_PATH/$1/.ssh	
+	/bin/chmod 700 $SITEHOME_PATH/$1/.ssh
+	/usr/bin/ssh-keygen -t rsa -b 4096 -N "" -f $SITEHOME_PATH/$1/.ssh/$1.key
+	/bin/chown -R $1: $SITEHOME_PATH/$1/.ssh	
+
 	/usr/bin/mysql -uroot mysql -e "CREATE DATABASE $DBNAME"
 	/usr/bin/mysql -uroot mysql -e "GRANT ALL PRIVILEGES ON $DBNAME.* TO '$DBNAME'@'localhost' IDENTIFIED BY '$PASS'"
 
-	/bin/echo $'\a'Added MySQL database $DBNAME 
-	/bin/echo $'\a'Added MySQL user $DBNAME with password $PASS
-	/bin/echo $'\a'Added System user $1 with password: $PASS
+	/bin/echo $'\a'Added MySQL database $DBNAME | tee -a $SITEHOME_PATH/$1/createUser.log
+	/bin/echo $'\a'Added MySQL user $DBNAME with password $PASS | tee -a $SITEHOME_PATH/$1/createUser.log
+	/bin/echo $'\a'Added System user $1 with password: $PASS | tee -a $SITEHOME_PATH/$1/createUser.log
 	exit 0
 fi
 
